@@ -3,7 +3,7 @@
 # include <errno.h>
 # include <stdio.h>
 
-#define NONWORD '\n'
+#define NONWORD "\n"
 
 enum {
   NPREF = 2, /*プレフィクスの関数*/
