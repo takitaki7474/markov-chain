@@ -98,3 +98,30 @@ void addsuffix(State *sp, char *suffix)
   suf->next = sp->suf;
   sp->suf = suf;
 }
+
+void generate(int nwords)
+{
+  State *sp;
+  Suffix *suf;
+  char *prefix[NPREF], *w;
+  int i, nmatch;
+
+  for(i = 0; i < NPREF; i++){/*初期プレフィクスをリセット*/
+    prefix[i] = NONWORD;
+  }
+  for(i = 0; i < nwords; i++){
+    sp = lookup(prefix, 0);
+    nmatch = 0;
+    for(suf = sp->suf; suf != NULL; suf = suf->next){
+      if(rand() % ++nmatch == 0){/*確率1/nmatch*/
+        w = suf->word
+      }
+    }
+    if(strcmp(w, NONWORD) == 0){
+      break;
+    }
+    printf("%s\n",w);
+    memmove(prefix, prefix+1, (NPREF-1)*sizeof(prefix[0]));
+    prefix[NPREF-1] = w;
+  }
+}
