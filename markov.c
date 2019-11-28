@@ -1,7 +1,8 @@
 enum {
   NPREF = 2, /*プレフィクスの関数*/
   NHASH = 4093,/*状態ハッシュテーブル*/
-  MAXGEN = 10000/*生成される単語数の上限*/
+  MAXGEN = 10000,/*生成される単語数の上限*/
+  MULTIPLIER = 7
 };
 
 typedef struct State State;
@@ -34,6 +35,20 @@ unsigned int hash(char *s[NPREF])
     }
   }
   return h % NHASH;
+}
+
+
+
+/*emalloc mallocを実行し、エラー時には報告*/
+void *emalloc(size_t, n)
+{
+  void *p;
+
+  p = malloc(n);
+  if(p==NULL){
+    eprintf("malloc of %u bytes faild:",n);
+  }
+  return p;
 }
 
 /*lookup: プレフィクスの検索、指定されればそれを生成*/
