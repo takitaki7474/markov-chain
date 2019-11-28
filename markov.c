@@ -73,6 +73,28 @@ void build(char *prefix[NPREF], FILE *f)
   char buf[100], fmt[10];
 
   /*書式文字列を作成*/
-  sprintf(fmt, )
+  sprintf(fmt, "%%%ds", sizeof(buf)-1);
+  while(fscanf(f, fmt, buf) != EOF){
+    add(prefix, estrdup(buf));
+  }
+}
 
+void add(char *prefix[NPREF], char *suffix)
+{
+  State *sp;
+
+  sp = lookup(prefix, 1);
+  addsuffix(sp, suffix);
+  memmove(prefix, prefix+1, (NPREF-1)*sizeof(prefix[0]));
+  prefix[NPREF-1] = suffix;
+}
+
+void addsuffix(State *sp, char *suffix)
+{
+  Suffix *suf;
+
+  suf = (Suffix *) emalloc(sizeof(Suffix));
+  suf->word = suffix;
+  suf->next = sp->suf;
+  sp->suf = suf;
 }
