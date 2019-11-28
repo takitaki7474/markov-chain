@@ -125,3 +125,18 @@ void generate(int nwords)
     prefix[NPREF-1] = w;
   }
 }
+
+/*マルコフ連鎖によるランダムテキスト生成プログラム*/
+int main(void)
+{
+  int i, nwords = MAXGEN;
+  char *prefix[NPREF];/*現在の入力プレフィクス*/
+
+  for(i = 0; i < NPREF; i++){/*初期プレフィクスをセットアップ*/
+    prefix[i]  = NONWORD;
+  }
+  build(prefix, stdin);
+  add(prefix, NONWORD);
+  generate(nwords);
+  return 0;
+}
