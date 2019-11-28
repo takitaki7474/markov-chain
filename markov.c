@@ -1,3 +1,8 @@
+# include <stdarg.h>
+# include <string.h>
+# include <errno.h>
+
+
 enum {
   NPREF = 2, /*プレフィクスの関数*/
   NHASH = 4093,/*状態ハッシュテーブル*/
@@ -30,14 +35,31 @@ unsigned int hash(char *s[NPREF])
 
   h = 0;
   for(i = 0; i < NPREF; i++){
-    for(p = (unsigned char *) s[i]; *p != '/0'; p++){
+    for(p = (unsigned char *) s[i]; *p != '\0'; p++){
       h = MULTIPLIER * h + *p;
     }
   }
   return h % NHASH;
 }
 
+void eprintf(char *fmt, ...)
+{
+  va_list args;
 
+  fflush(stdout);
+  if(progname() != NULL){
+    fprintf(stderr, "%s: ", progname());
+  }
+  va_start(args, fmt);
+  vfprintf(stderr, fmt, args);
+  va_end(args);
+
+  if(fmt[0] != '\0' && fmt[strlen(fmt)-1] == ':'){
+    fprintf(stderr, "%s: ", strerror(errno));
+  }
+  fprintf(stderr, "\n");
+  exit(2);
+}
 
 /*emalloc mallocを実行し、エラー時には報告*/
 void *emalloc(size_t, n)
@@ -129,7 +151,7 @@ void generate(int nwords)
     nmatch = 0;
     for(suf = sp->suf; suf != NULL; suf = suf->next){
       if(rand() % ++nmatch == 0){/*確率1/nmatch*/
-        w = suf->word
+        w = suf->word;
       }
     }
     if(strcmp(w, NONWORD) == 0){
