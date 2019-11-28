@@ -1,13 +1,15 @@
 # include <stdarg.h>
 # include <string.h>
 # include <errno.h>
+# include <stdio.h>
 
+#define NONWORD '\n'
 
 enum {
   NPREF = 2, /*プレフィクスの関数*/
   NHASH = 4093,/*状態ハッシュテーブル*/
   MAXGEN = 10000,/*生成される単語数の上限*/
-  MULTIPLIER = 7
+  MULTIPLIER = 7,
 };
 
 typedef struct State State;
@@ -26,6 +28,8 @@ struct Suffix {
 
 State *statetab[NHASH]; /*状態のハッシュテーブル*/
 
+static char *name = NULL;
+
 /*hash: NPREF個の文字列からなる配列のハッシュ値を計算*/
 unsigned int hash(char *s[NPREF])
 {
@@ -41,6 +45,15 @@ unsigned int hash(char *s[NPREF])
   }
   return h % NHASH;
 }
+
+
+/*progname: 記憶されたプログラム名を返す*/
+char *progname(void)
+{
+ return name;
+}
+
+
 
 void eprintf(char *fmt, ...)
 {
@@ -61,8 +74,26 @@ void eprintf(char *fmt, ...)
   exit(2);
 }
 
+char *estrdup(char *s)
+{
+  char *t;
+
+  t = (char *) malloc(strlen(s)+1);
+  if(t == NULL){
+    eprintf("estrdup(\"%.20s\") failed:", s);
+  }
+  strcpy(t, s);
+  return t;
+}
+
+void setprogname(char *str)
+{
+  name = estrdup(str);
+}
+
+
 /*emalloc mallocを実行し、エラー時には報告*/
-void *emalloc(size_t, n)
+void *emalloc(size_t n)
 {
   void *p;
 
@@ -104,16 +135,16 @@ State* lookup(char *prefix[NPREF], int create)
   return sp;
 }
 
-/*build: 入力を読み、プレフィクステーブルを作成*/
-void build(char *prefix[NPREF], FILE *f)
-{
-  char buf[100], fmt[10];
 
-  /*書式文字列を作成*/
-  sprintf(fmt, "%%%ds", sizeof(buf)-1);
-  while(fscanf(f, fmt, buf) != EOF){
-    add(prefix, estrdup(buf));
-  }
+
+void addsuffix(State *sp, char *suffix)
+{
+  Suffix *suf;
+
+  suf = (Suffix *) emalloc(sizeof(Suffix));
+  suf->word = suffix;
+  suf->next = sp->suf;
+  sp->suf = suf;
 }
 
 void add(char *prefix[NPREF], char *suffix)
@@ -126,15 +157,19 @@ void add(char *prefix[NPREF], char *suffix)
   prefix[NPREF-1] = suffix;
 }
 
-void addsuffix(State *sp, char *suffix)
+/*build: 入力を読み、プレフィクステーブルを作成*/
+void build(char *prefix[NPREF], FILE *f)
 {
-  Suffix *suf;
+  char buf[100], fmt[10];
 
-  suf = (Suffix *) emalloc(sizeof(Suffix));
-  suf->word = suffix;
-  suf->next = sp->suf;
-  sp->suf = suf;
+  /*書式文字列を作成*/
+  sprintf(fmt, "%%%ds", sizeof(buf)-1);
+  while(fscanf(f, fmt, buf) != EOF){
+    add(prefix, estrdup(buf));
+  }
 }
+
+
 
 void generate(int nwords)
 {
